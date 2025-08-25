@@ -1,41 +1,36 @@
--- loader.lua
-local Loader = {}
-Loader.baseURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts/"
-Loader.scriptsRegistryURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts.lua"
+-- sloader.lua
+local loader = {}
+loader.baseURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts/"
+loader.registryURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts.lua"
 
--- Fetch scripts registry safely
-local function fetchRegistry()
-    local success, registryCode = pcall(function()
-        return game:HttpGet(Loader.scriptsRegistryURL)
-    end)
+-- Fetch scripts registry
+local success, registryCode = pcall(function()
+    return game:HttpGet(loader.registryURL)
+end)
 
-    if not success or not registryCode or registryCode == "" then
-        warn("Failed to fetch scripts registry: "..tostring(registryCode))
-        return {}
-    end
-
+if success and registryCode and registryCode ~= "" then
     local ok, result = pcall(function()
-        return loadstring("return "..registryCode)()
+        return loadstring(registryCode)()
     end)
-
     if ok and type(result) == "table" then
-        return result
+        loader.scripts = result
     else
         warn("Failed to parse scripts registry: "..tostring(result))
-        return {}
+        loader.scripts = {}
     end
+else
+    warn("Failed to fetch scripts registry: "..tostring(registryCode))
+    loader.scripts = {}
 end
 
-Loader.scripts = fetchRegistry()
-
 -- Load a script by file name
-function Loader:loadScript(fileName)
+function loader.loadscript(fileName)
     if not fileName or fileName == "" then
         warn("No script file name provided")
         return
     end
 
-    local url = self.baseURL .. fileName .. ".lua"
+    local url = loader.baseURL .. fileName .. ".lua"
     local success, result = pcall(function()
         return game:HttpGet(url)
     end)
@@ -58,17 +53,15 @@ function Loader:loadScript(fileName)
     return res
 end
 
--- List available scripts
-function Loader:listScripts()
-    if not self.scripts or #self.scripts == 0 then
+-- Optional: list scripts
+function loader.listscripts()
+    if not loader.scripts or #loader.scripts == 0 then
         warn("No scripts available")
         return
     end
-
-    for i, s in ipairs(self.scripts) do
+    for i, s in ipairs(loader.scripts) do
         print(i..". "..s.name.." - "..s.description)
     end
 end
 
--- Safety check: always return Loader
-return Loader
+return loader
