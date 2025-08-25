@@ -1,9 +1,8 @@
--- sloader.lua
 local loader = {}
 loader.baseURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts/"
 loader.registryURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts.lua"
 
--- Fetch scripts registry
+-- Fetch registry
 local success, registryCode = pcall(function()
     return game:HttpGet(loader.registryURL)
 end)
@@ -23,7 +22,7 @@ else
     loader.scripts = {}
 end
 
--- Load a script by file name
+-- Load script
 function loader.loadscript(fileName)
     if not fileName or fileName == "" then
         warn("No script file name provided")
@@ -53,7 +52,7 @@ function loader.loadscript(fileName)
     return res
 end
 
--- Optional: list scripts
+-- List scripts
 function loader.listscripts()
     if not loader.scripts or #loader.scripts == 0 then
         warn("No scripts available")
