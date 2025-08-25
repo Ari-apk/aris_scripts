@@ -1,26 +1,32 @@
+-- loader.lua
 local Loader = {}
 Loader.baseURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts/"
 Loader.scriptsRegistryURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts.lua"
 
 -- Fetch scripts registry safely
-local success, registryCode = pcall(function()
-    return game:HttpGet(Loader.scriptsRegistryURL)
-end)
+local function fetchRegistry()
+    local success, registryCode = pcall(function()
+        return game:HttpGet(Loader.scriptsRegistryURL)
+    end)
 
-if success and registryCode and registryCode ~= "" then
+    if not success or not registryCode or registryCode == "" then
+        warn("Failed to fetch scripts registry: "..tostring(registryCode))
+        return {}
+    end
+
     local ok, result = pcall(function()
         return loadstring("return "..registryCode)()
     end)
-    if ok and result then
-        Loader.scripts = result
+
+    if ok and type(result) == "table" then
+        return result
     else
         warn("Failed to parse scripts registry: "..tostring(result))
-        Loader.scripts = {}
+        return {}
     end
-else
-    warn("Failed to fetch scripts registry: "..tostring(registryCode))
-    Loader.scripts = {}
 end
+
+Loader.scripts = fetchRegistry()
 
 -- Load a script by file name
 function Loader:loadScript(fileName)
@@ -34,16 +40,22 @@ function Loader:loadScript(fileName)
         return game:HttpGet(url)
     end)
 
-    if success and result and result ~= "" then
-        local func, err = loadstring(result)
-        if func then
-            return func()
-        else
-            warn("Error compiling script '"..fileName.."': "..tostring(err))
-        end
-    else
+    if not success or not result or result == "" then
         warn("Failed to fetch script '"..fileName.."': "..tostring(result))
+        return
     end
+
+    local func, err = loadstring(result)
+    if not func then
+        warn("Error compiling script '"..fileName.."': "..tostring(err))
+        return
+    end
+
+    local ok, res = pcall(func)
+    if not ok then
+        warn("Error running script '"..fileName.."': "..tostring(res))
+    end
+    return res
 end
 
 -- List available scripts
@@ -58,4 +70,5 @@ function Loader:listScripts()
     end
 end
 
+-- Safety check: always return Loader
 return Loader
