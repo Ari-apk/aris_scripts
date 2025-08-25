@@ -1,6 +1,6 @@
 local Loader = {}
-Loader.baseURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts/"
-Loader.scriptsRegistryURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/main/scripts.lua"
+Loader.baseURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/refs/heads/main/scripts/"
+Loader.scriptsRegistryURL = "https://raw.githubusercontent.com/Ari-apk/aris_scripts/refs/heads/main/scripts.lua"
 
 -- Fetch and parse scripts registry
 local success, registryCode = pcall(function()
